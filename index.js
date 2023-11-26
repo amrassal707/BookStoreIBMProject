@@ -11,10 +11,10 @@ mongoose.connect(dbUri).then(()=> {
 }).catch((error)=> {
     console.log(error)
 });
-app.use(bodyParser.urlencoded({
-    extended: true
-  })); // middleware to parse json objects  
-app.use(express.json);
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+})); // middleware to handle json objects
 
 app.get('/user' , async (req, res)=> {
 
@@ -22,10 +22,12 @@ app.get('/user' , async (req, res)=> {
     res.send(users);
 });
 
-app.post('/user', (req,res)=> {
-    console.log(req.body.name);
-    res.send(req.body.name);
+app.post('/user', async (req,res)=> {
+    await User.create(req.body)
+    res.send('user added '+ req.body)
 })
+
+
 
   
 
