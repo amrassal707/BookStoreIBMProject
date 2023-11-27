@@ -2,8 +2,8 @@ const express= require('express');
 const app= express();
 const bodyParser= require('body-parser');
 const mongoose= require('mongoose');
-const User = require('./UserModel');
-const Book = require('./BookModel');
+const User = require('./Models/UserModel');
+const Book = require('./Models/BookModel');
 const dbUri= 'mongodb+srv://test:123@nodetest.lvtgp25.mongodb.net/bookstore?retryWrites=true&w=majority';
 
 // .connect is async function so we can use it a promise
@@ -42,9 +42,10 @@ app.post('/book', async (req,res)=> {
 });
 
 
-app.get('book/:author', async(req,res)=> {
-    let {author} = req.params;
-    let book =await Book.find({'author': author}); 
+app.get('/book/:author', async(req,res)=> {
+    let author = req.params.author;
+    console.log(author);
+    let book =await Book.find({"author" : author}).exec();
     res.send(book);
 });
 
