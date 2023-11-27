@@ -42,12 +42,53 @@ app.post('/book', async (req,res)=> {
 });
 
 
-app.get('/book/:author', async(req,res)=> {
+app.get('/book-author/:author', async(req,res)=> {
     let author = req.params.author;
-    console.log(author);
     let book =await Book.find({"author" : author}).exec();
     res.send(book);
 });
+app.get('/book-title/:title', async(req,res)=> {
+    let title = req.params.title;
+    let book =await Book.find({"title" : title}).exec();
+    res.send(book);
+});
+app.get('/book-ISBN/:ISBN', async(req,res)=> {
+    let ISBN = req.params.ISBN;
+    let book =await Book.find({"id" : ISBN}).exec();
+    res.send(book);
+});
+
+app.get('/book-review/:title', async(req,res)=> {
+    let title = req.params.title;
+    let book =await Book.find({"title" : title}).exec();
+    res.send(book["reviews"]);
+});
+
+//add reviews
+app.post('/book-review/:title', async(req,res)=> {
+    let reviews = []
+    let title = req.params.title;
+    let {review}= req.body;
+    let book =await Book.findOne({"title" : title}).exec();
+    reviews= book["reviews"];
+    reviews.push(review);
+    try {
+        await Book.findOneAndUpdate({"title" : title} , {"reviews" : reviews}).exec();
+        res.send("added successfully");
+    }
+    catch{
+        res.send('soemthing went wrong please check your data again');
+    }    
+});
+
+
+
+
+
+
+
+
+
 
 
 
