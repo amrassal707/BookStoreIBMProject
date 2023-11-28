@@ -7,12 +7,14 @@ const User = require('./Models/UserModel');
 const Book = require('./Models/BookModel');
 const dbUri= 'mongodb+srv://test:123@nodetest.lvtgp25.mongodb.net/bookstore?retryWrites=true&w=majority';
 const jwtSecret= "verysecret";
+
 // .connect is async function so we can use it a promise
 mongoose.connect(dbUri).then(()=> {
     console.log('connected to db');
 }).catch((error)=> {
     console.log(error)
 });
+
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
@@ -62,7 +64,11 @@ app.get('/book-ISBN/:ISBN', async(req,res)=> {
 app.get('/book-review/:title', async(req,res)=> {
     let title = req.params.title;
     let book =await Book.find({"title" : title}).exec();
-    res.send(book["reviews"]);
+    if(book) {
+        return  res.send(book[0]["reviews"]);
+    }
+    return res.send("not found");
+   
 });
 
 //add reviews
@@ -71,7 +77,7 @@ app.post('/book-review/:title', async(req,res)=> {
     let title = req.params.title;
     let {review}= req.body;
     let book =await Book.findOne({"title" : title}).exec();
-    reviews= book["reviews"];
+    reviews= book[0]["reviews"];
     reviews.push(review);
     try {
         await Book.findOneAndUpdate({"title" : title} , {"reviews" : reviews}).exec();
@@ -81,6 +87,8 @@ app.post('/book-review/:title', async(req,res)=> {
         res.send('soemthing went wrong please check your data again');
     }    
 });
+
+// logging and registering users with JWT
 
 
 app.post('/login', async(req, res)=> {
@@ -105,11 +113,6 @@ app.post('/register', async(req, res)=> {
         return res.send('cant register, already found')
     }
 
-    // for ([key, value] of users.entries()) {
-    //     if(user["name"] === value["name"]) {
-    //         return res.send('cant register, already found')
-    //     }
-    // }
     
     User.create(user);
     return res.send("added successfully");
