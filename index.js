@@ -2,10 +2,11 @@ const express= require('express');
 const app= express();
 const bodyParser= require('body-parser');
 const mongoose= require('mongoose');
+const jwt= require('jsonwebtoken');
 const User = require('./Models/UserModel');
 const Book = require('./Models/BookModel');
 const dbUri= 'mongodb+srv://test:123@nodetest.lvtgp25.mongodb.net/bookstore?retryWrites=true&w=majority';
-
+const jwtSecret= "verysecret";
 // .connect is async function so we can use it a promise
 mongoose.connect(dbUri).then(()=> {
     console.log('connected to db');
@@ -54,7 +55,7 @@ app.get('/book-title/:title', async(req,res)=> {
 });
 app.get('/book-ISBN/:ISBN', async(req,res)=> {
     let ISBN = req.params.ISBN;
-    let book =await Book.find({"id" : ISBN}).exec();
+    let book =await Book.find({"_id" : ISBN}).exec();
     res.send(book);
 });
 
@@ -80,6 +81,34 @@ app.post('/book-review/:title', async(req,res)=> {
         res.send('soemthing went wrong please check your data again');
     }    
 });
+
+
+app.post('/login', (req, res)=> {
+    let user = req.body;
+    
+})
+app.post('/register', async(req, res)=> {
+
+    let user= req.body;
+    let users= await User.find();
+    for ([key, value] of users.entries()) {
+        if(user["name"] === value["name"]) {
+            return res.send('cant register, already found')
+        }
+    }
+    
+    User.create(user);
+    return res.send("added successfully");
+
+})
+
+app.get('/users', async(req, res)=> {
+    let users = await User.find();
+    return res.send(users);
+})
+
+
+
 
 
 
