@@ -83,19 +83,33 @@ app.post('/book-review/:title', async(req,res)=> {
 });
 
 
-app.post('/login', (req, res)=> {
+app.post('/login', async(req, res)=> {
     let user = req.body;
+    let name = user["name"];
+    let loggedUser= await User.findOne({name});
+    if (loggedUser) {
+
+        let token =jwt.sign({name: name } , jwtSecret);
+        return res.send(token)
+    }
+    return res.send("user not found")
     
+
 })
 app.post('/register', async(req, res)=> {
 
     let user= req.body;
-    let users= await User.find();
-    for ([key, value] of users.entries()) {
-        if(user["name"] === value["name"]) {
-            return res.send('cant register, already found')
-        }
+    let name = user["name"];
+    let users= await User.findOne({name});
+    if(users) {
+        return res.send('cant register, already found')
     }
+
+    // for ([key, value] of users.entries()) {
+    //     if(user["name"] === value["name"]) {
+    //         return res.send('cant register, already found')
+    //     }
+    // }
     
     User.create(user);
     return res.send("added successfully");
