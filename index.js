@@ -73,25 +73,36 @@ app.get('/book-review/:title', async(req,res)=> {
 
 //add reviews
 app.post('/book-review/:title', async(req,res)=> {
+    
     let reviews = []
     let title = req.params.title;
     let {review}= req.body;
     let book =await Book.findOne({"title" : title}).exec();
-    reviews= book[0]["reviews"];
+    reviews= book["reviews"];
     reviews.push(review);
-    try {
-        await Book.findOneAndUpdate({"title" : title} , {"reviews" : reviews}).exec();
-        res.send("added successfully");
+    let token = req.headers.authorization;
+    let newToken= token.slice(7);
+    const verify= jwt.verify(newToken, jwtSecret);
+    let name = verify.name;
+    let user = await User.findOne({name})
+    if(user) {
+        try {
+            await Book.findOneAndUpdate({"title" : title} , {"reviews" : reviews}).exec();
+            return res.send("added successfully");
+        }
+        catch{
+            res.send('soemthing went wrong please check your data again');
+        }    
     }
-    catch{
-        res.send('soemthing went wrong please check your data again');
-    }    
+    return res.send('log in first')
+    
 });
 
 // logging and registering users with JWT
 
 
 app.post('/login', async(req, res)=> {
+   
     let user = req.body;
     let name = user["name"];
     let loggedUser= await User.findOne({name});
